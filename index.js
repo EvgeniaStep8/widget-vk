@@ -1,7 +1,3 @@
-require("dotenv").config();
-
-const { KEY } = process.env;
-
 const url =
   "https://api.vk.com/method/wall.get?owner_id=-76127976&domain=vk.com/wildberries_shop&offset=1&count=10&filter=all";
 
