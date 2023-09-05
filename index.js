@@ -1,12 +1,13 @@
 let posts = [];
 const count = 10;
+let localStorageMaxSize;
 
 const widget = document.querySelector(".widget");
 
 const callbackFunc = (result) => {
   result.response.items.forEach((item) => {
     posts.push(item);
-  });
+  })
   renderPosts(result.response.items);
   setLocalStoragePosts(posts);
 };
@@ -54,6 +55,7 @@ const renderPosts = (data) => {
 const setLocalStoragePosts = (posts) => {
   try {
     localStorage.setItem("posts", JSON.stringify(posts));
+    console.log(`Занято ${(JSON.stringify(posts).length / 1000000).toFixed(1)} Мб из ${maxSize} Мб`);
   } catch {
     posts = posts.slice(count);
     setLocalStoragePosts(posts);
@@ -64,13 +66,40 @@ const renderWidget = () => {
   if (localStorage.getItem("posts")) {
     posts = JSON.parse(localStorage.getItem("posts"));
     renderPosts(posts);
+    console.log(`Занято ${(JSON.stringify(posts).length / 1000000).toFixed(1)} Мб из ${maxSize} Мб`);
   } else {
     getPosts(0);
+    console.log(`Занято ${(JSON.stringify(posts).length / 1000000)} Мб из ${maxSize} Мб`);
   }
 };
 
-renderWidget();
+const trySetItem = (testData, step) => {
+  try {
+    localStorage.setItem("test", testData);
+    testData+=step;
+    trySetItem(testData, step);
+  } catch {
+    localStorage.removeItem("test");
+    if (localStorage.getItem("posts")) {
+      maxSize = ((testData.length + localStorage.getItem("posts").length) / 1000000).toFixed(1);
+    } else {
+      maxSize = testData.length / 1000000;
+    }
+  }
+}
+
+const countMaxLocalStorageSize = () => {
+  let testData = "";
+  for (let i = 0; i < 100000; i++) {
+    testData+="aaaaaaaa";
+  }
+  const step = testData;
+  
+  trySetItem(testData, step);
+}
+
 countMaxLocalStorageSize();
+renderWidget();
 
 widget.addEventListener("scroll", () => {
   if (widget.scrollHeight - widget.scrollTop < 550) {
